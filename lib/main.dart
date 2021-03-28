@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'Stopwatch with fall detection'),
     );
   }
 }
@@ -47,19 +47,39 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
   final stopWatch = Stopwatch();
   Timer? refreshTimer;
+  int countdown = 3;
+  bool countingDown = false;
+  bool transparent = true;
+  int animationDuration = 250;
 
-  void _incrementCounter() {
+
+  void animateCountdown() {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      animationDuration = 50;
+      transparent = false;
     });
+    Future.delayed(Duration(milliseconds: animationDuration), () {
+      setState(() {
+        animationDuration = 900;
+        transparent = true;
+      });
+    });
+  }
+
+  void runCountdown() {
+    countdown--;
+    animateCountdown();
+    if (countdown > 0) {
+      refreshTimer = Timer(Duration(seconds: 1), runCountdown);
+    } else {
+      countingDown = false;
+      stopWatch.start();
+      refreshTimer = Timer.periodic(Duration(milliseconds: 50), (timer) {
+        setState(() {});
+      });
+    }
   }
 
   @override
@@ -103,6 +123,20 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter',
               //style: Theme.of(context).textTheme.headline4,
             ),*/
+            AnimatedDefaultTextStyle(
+                child: Text(countdown.toString()),
+                style: transparent
+                    ? TextStyle(
+                        color: Colors.transparent,
+                        fontSize:
+                            Theme.of(context).textTheme.headline1?.fontSize,
+                      )
+                    : TextStyle(
+                        color: Colors.black,
+                        fontSize:
+                            Theme.of(context).textTheme.headline1?.fontSize,
+                      ),
+                duration: Duration(milliseconds: animationDuration)),
             Text(
               '${stopWatch.elapsed}',
               style: Theme.of(context).textTheme.headline5,
@@ -113,22 +147,22 @@ class _MyHomePageState extends State<MyHomePage> {
 
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          setState(() {
-            if (stopWatch.isRunning) {
+          if (!stopWatch.isRunning && !countingDown) {
+            countingDown = true;
+            countdown = 5;
+            stopWatch.reset();
+            animateCountdown();
+            refreshTimer = Timer(Duration(seconds: 1), runCountdown);
+          } else {
+            setState(() {
+              countingDown = false;
               stopWatch.stop();
-              refreshTimer = null;
-            } else {
-              stopWatch.reset();
-              stopWatch.start();
-              refreshTimer =
-                  Timer.periodic(Duration(milliseconds: 50), (timer) {
-                setState(() {});
-              });
-            }
-          });
+              refreshTimer?.cancel();
+            });
+          }
         },
         tooltip: 'Increment',
-        child: Icon(stopWatch.isRunning?Icons.pause:Icons.play_arrow),
+        child: Icon(stopWatch.isRunning || countingDown ? Icons.pause : Icons.play_arrow),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
