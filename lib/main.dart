@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
+//import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audio_cache.dart';
 
@@ -56,8 +59,17 @@ class _MyHomePageState extends State<MyHomePage> {
   int animationDuration = 250;
   static AudioCache sounds = AudioCache();
 
+  final _440 = '440.wav';
+  final _880 = '880.wav';
+
+  late Uint8List _440_bytes;
+  late Uint8List _880_bytes;
+
+
   void loadSounds() async {
-    await sounds.loadAll(['440.mp3', '880.mp3']);
+    //await sounds.loadAll([_440, _880]);
+    _440_bytes = (await sounds.load(_440)).readAsBytesSync();
+    _880_bytes = (await sounds.load(_880)).readAsBytesSync();
   }
 
   _MyHomePageState() {
@@ -66,6 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void animateCountdown() {
     setState(() {
+      sounds.playBytes(countdown > 0 ?_440_bytes : _880_bytes);
       animationDuration = 50;
       transparent = false;
     });
@@ -81,10 +94,8 @@ class _MyHomePageState extends State<MyHomePage> {
     countdown--;
     animateCountdown();
     if (countdown > 0) {
-      sounds.play('440.mp3');
       refreshTimer = Timer(Duration(seconds: 1), runCountdown);
     } else {
-      sounds.play('880.mp3');
       countingDown = false;
       stopWatch.start();
       refreshTimer = Timer.periodic(Duration(milliseconds: 50), (timer) {
