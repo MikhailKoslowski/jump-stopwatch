@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key? key, this.title = ''}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -47,6 +48,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  final stopWatch = Stopwatch();
+  Timer? refreshTimer;
 
   void _incrementCounter() {
     setState(() {
@@ -93,20 +96,39 @@ class _MyHomePageState extends State<MyHomePage> {
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
+            /*Text(
               'You have pushed the button this many times:',
             ),
             Text(
               '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+              //style: Theme.of(context).textTheme.headline4,
+            ),*/
+            Text(
+              '${stopWatch.elapsed}',
+              style: Theme.of(context).textTheme.headline5,
             ),
           ],
         ),
       ),
+
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: () {
+          setState(() {
+            if (stopWatch.isRunning) {
+              stopWatch.stop();
+              refreshTimer = null;
+            } else {
+              stopWatch.reset();
+              stopWatch.start();
+              refreshTimer =
+                  Timer.periodic(Duration(milliseconds: 50), (timer) {
+                setState(() {});
+              });
+            }
+          });
+        },
         tooltip: 'Increment',
-        child: Icon(Icons.add),
+        child: Icon(stopWatch.isRunning?Icons.pause:Icons.play_arrow),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
