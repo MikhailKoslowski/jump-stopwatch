@@ -2,7 +2,7 @@
     package="com.example.jump_stopwatch">
    <application
         android:label="jump_stopwatch"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcher_icon">
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
