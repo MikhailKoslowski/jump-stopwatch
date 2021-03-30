@@ -21,6 +21,9 @@ class _MyStopWatchState extends State<MyStopWatch> {
   int _seconds = 0;
   int _milliseconds = 0;
 
+  Duration _lap = Duration();
+  Duration _accLap = Duration();
+
   bool _running = false;
   int _countdownValue = 0;
 
@@ -43,7 +46,8 @@ class _MyStopWatchState extends State<MyStopWatch> {
   @override
   void initState() {
     loadSounds();
-    _streamSubscriptions.add(userAccelerometerEvents.listen(accelerometerCallback));
+    _streamSubscriptions
+        .add(userAccelerometerEvents.listen(accelerometerCallback));
     super.initState();
   }
 
@@ -110,7 +114,7 @@ class _MyStopWatchState extends State<MyStopWatch> {
 
   void start() {
     _running = true;
-    final settings = Provider.of<Settings>(context, listen:false);
+    final settings = Provider.of<Settings>(context, listen: false);
     _threshold = settings.threshold;
     _countdown(value: settings.countdown);
   }
@@ -121,6 +125,13 @@ class _MyStopWatchState extends State<MyStopWatch> {
     _minutes = 0;
     _seconds = 0;
     _milliseconds = 0;
+    _lap = Duration();
+    _accLap = Duration();
+  }
+
+  void lap() {
+    _lap = _stopwatch.elapsed - _accLap;
+    _accLap = _stopwatch.elapsed;
   }
 
   @override
@@ -143,25 +154,52 @@ class _MyStopWatchState extends State<MyStopWatch> {
         Flexible(
             fit: FlexFit.tight,
             flex: 1,
-            child: TextButton(
-              onLongPress: () {
-                setState(() {
-                  reset();
-                });
-              },
-              onPressed: () {
-                setState(() {
-                  if (_running) {
-                    stop();
-                  } else {
-                    start();
-                  }
-                });
-              },
-              child: Text(
-                _running ? 'STOP' : 'START / RESET',
-                style: Theme.of(context).textTheme.headline2,
-              ),
+            child: Text(_lap.toString(),
+                style: Theme.of(context).textTheme.headline5)),
+        Flexible(
+            fit: FlexFit.tight,
+            flex: 1,
+            child: Row(
+              children: [
+                Flexible(
+                  fit: FlexFit.tight,
+                  flex: 1,
+                  child: TextButton(
+                    onPressed: () {
+                      setState(() {
+                        if (_running) {
+                          stop();
+                        } else {
+                          start();
+                        }
+                      });
+                    },
+                    child: Text(
+                      _running ? 'STOP' : 'START',
+                      style: Theme.of(context).textTheme.headline2,
+                    ),
+                  ),
+                ),
+                Flexible(
+                  fit: FlexFit.tight,
+                  flex: 1,
+                  child: TextButton(
+                    onPressed: () {
+                      setState(() {
+                        if (_running) {
+                          lap();
+                        } else {
+                          reset();
+                        }
+                      });
+                    },
+                    child: Text(
+                      _running ? 'LAP' : 'RESET',
+                      style: Theme.of(context).textTheme.headline2,
+                    ),
+                  ),
+                ),
+              ],
             ))
       ]),
     );
