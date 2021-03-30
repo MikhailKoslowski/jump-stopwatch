@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 //import 'package:intl/intl.dart';
 import 'stopwatch.dart';
-import 'physics.dart';
+import 'settings.dart';
 import 'package:provider/provider.dart';
 
 void main() {
   runApp(MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => Physics()),
+        ChangeNotifierProvider(create: (context) => Settings()),
       ],
       child: MaterialApp(
         title: 'Jump StopWatch',
@@ -43,7 +43,7 @@ class MySettings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    final physics = Provider.of<Physics>(context);
+    final settings = Provider.of<Settings>(context, listen:true);
 
     return Scaffold(
       appBar: AppBar(title: Text('Settings')),
@@ -53,19 +53,38 @@ class MySettings extends StatelessWidget {
             title: Text('Stop Threshold'),
             subtitle: Text('Gravity is already discounted'),
             leading: Icon(Icons.arrow_downward),
-            trailing: Text('${physics.thresholdStr} m/s²'),
+            trailing: Text('${settings.thresholdStr} m/s²'),
           ),
           ListTile(
             title: Slider(
-              value: physics.threshold,
-              label: physics.thresholdStr,
-              min: 1,
+              value: settings.threshold,
+              label: settings.thresholdStr,
+              min: 0,
               max: 20,
+              divisions: 40,
               onChanged: (value) {
-                physics.threshold = value;
+                settings.threshold = value;
               },
             ),
-          )
+          ),
+          ListTile(
+            title: Text('Countdown'),
+            subtitle: Text('Number of beeps before starting'),
+            leading: Icon(Icons.audiotrack),
+            trailing: Text('${settings.countdown}'),
+          ),
+          ListTile(
+            title: Slider(
+              value: settings.countdown * 1.0,
+              label: '${settings.countdown}',
+              min: 0,
+              max: 5,
+              divisions: 5,
+              onChanged: (value) {
+                settings.countdown = value.toInt();
+              },
+            ),
+          ),
         ]),
       ),
     );

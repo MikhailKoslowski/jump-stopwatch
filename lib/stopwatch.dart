@@ -8,7 +8,7 @@ import 'dart:typed_data';
 import 'package:sensors/sensors.dart';
 import 'dart:math';
 
-import 'physics.dart';
+import 'settings.dart';
 import 'package:provider/provider.dart';
 
 class MyStopWatch extends StatefulWidget {
@@ -38,13 +38,12 @@ class _MyStopWatchState extends State<MyStopWatch> {
   List<StreamSubscription<dynamic>> _streamSubscriptions =
       <StreamSubscription<dynamic>>[];
   double acceleration = 0;
-  final double gravity = 9.6;
   double _threshold = 10;
 
   @override
   void initState() {
     loadSounds();
-    _streamSubscriptions.add(accelerometerEvents.listen(accelerometerCallback));
+    _streamSubscriptions.add(userAccelerometerEvents.listen(accelerometerCallback));
     super.initState();
   }
 
@@ -57,9 +56,8 @@ class _MyStopWatchState extends State<MyStopWatch> {
     super.dispose();
   }
 
-  void accelerometerCallback(AccelerometerEvent data) {
-    //acceleration = sqrt(data.x * data.x + data.y * data.y + data.z * data.z) - gravity;
-    acceleration = max(max(data.x.abs(), data.y.abs()), data.z.abs()) - gravity;
+  void accelerometerCallback(UserAccelerometerEvent data) {
+    acceleration = sqrt(data.x * data.x + data.y * data.y + data.z * data.z);
 
     if (acceleration > _threshold && _stopwatch.isRunning) {
       setState(() {
@@ -112,9 +110,9 @@ class _MyStopWatchState extends State<MyStopWatch> {
 
   void start() {
     _running = true;
-    _countdown(value: 5);
-    final physics = Provider.of<Physics>(context);
-    _threshold = physics.threshold;
+    final settings = Provider.of<Settings>(context, listen:false);
+    _threshold = settings.threshold;
+    _countdown(value: settings.countdown);
   }
 
   void reset() {

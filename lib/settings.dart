@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class Physics extends ChangeNotifier {
-  double _threshold = 10;
+class Settings extends ChangeNotifier {
+  double _threshold = 5;
+  int _countdown = 3;
 
   NumberFormat _f = NumberFormat('##.00');
 
@@ -10,6 +11,12 @@ class Physics extends ChangeNotifier {
   get thresholdStr => _f.format(_threshold);
   set threshold(value) {
     _threshold = value;
+    notifyListeners();
+  }
+
+  get countdown => _countdown;
+  set countdown(value) {
+    _countdown = value;
     notifyListeners();
   }
 }
