@@ -8,6 +8,9 @@ import 'dart:typed_data';
 import 'package:sensors/sensors.dart';
 import 'dart:math';
 
+import 'physics.dart';
+import 'package:provider/provider.dart';
+
 class MyStopWatch extends StatefulWidget {
   @override
   _MyStopWatchState createState() => _MyStopWatchState();
@@ -36,28 +39,34 @@ class _MyStopWatchState extends State<MyStopWatch> {
       <StreamSubscription<dynamic>>[];
   double acceleration = 0;
   final double gravity = 9.6;
-  final double threshold = 10;
+  double _threshold = 10;
 
   @override
   void initState() {
     loadSounds();
-
-    //accelerometerEvents.listen(accelerometerCallback);
-    _streamSubscriptions
-        .add(accelerometerEvents.listen((AccelerometerEvent data) {
-      //acceleration = sqrt(data.x * data.x + data.y * data.y + data.z * data.z) - gravity;
-      acceleration =
-          max(max(data.x.abs(), data.y.abs()), data.z.abs()) - gravity;
-
-      if (acceleration > threshold && _stopwatch.isRunning) {
-        setState(() {
-          stop();
-        });
-        sounds.playBytes(_lowPitchBytes);
-      }
-    }));
-
+    _streamSubscriptions.add(accelerometerEvents.listen(accelerometerCallback));
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _streamSubscriptions.forEach((streamSub) {
+      streamSub.cancel();
+    });
+    sounds.clearCache();
+    super.dispose();
+  }
+
+  void accelerometerCallback(AccelerometerEvent data) {
+    //acceleration = sqrt(data.x * data.x + data.y * data.y + data.z * data.z) - gravity;
+    acceleration = max(max(data.x.abs(), data.y.abs()), data.z.abs()) - gravity;
+
+    if (acceleration > _threshold && _stopwatch.isRunning) {
+      setState(() {
+        stop();
+      });
+      sounds.playBytes(_lowPitchBytes);
+    }
   }
 
   void loadSounds() async {
@@ -104,6 +113,8 @@ class _MyStopWatchState extends State<MyStopWatch> {
   void start() {
     _running = true;
     _countdown(value: 5);
+    final physics = Provider.of<Physics>(context);
+    _threshold = physics.threshold;
   }
 
   void reset() {
@@ -158,98 +169,3 @@ class _MyStopWatchState extends State<MyStopWatch> {
     );
   }
 }
-
-/*
-
-class MyStopWatch extends StatefulWidget {
-  @override
-  _MyStopWatchState createState() => _MyStopWatchState();
-
-}
-
-class _MyStopWatchState extends State<MyStopWatch> {
-  // StopWatch
-  final _stopWatch = Stopwatch();
-  Timer? _refreshTimer;
-
-  // Countdown timer
-  int _countdown = 3;
-  bool _countingDown = false;
-  bool _transparent = true;
-  int _animationDuration = 250;
-
-  int get countdown => _countdown;
-
-  bool get running => _countingDown || _stopWatch.isRunning;
-
-  void animateCountdown() {
-    //sounds.playBytes(countdown > 0 ? _440_bytes : _880_bytes);
-    setState(() {
-      _animationDuration = 100;
-      _transparent = false;
-    });
-
-    Future.delayed(Duration(milliseconds: _animationDuration), () {
-      setState(() {
-        _animationDuration = 650;
-        _transparent = true;
-      });
-    });
-  }
-
-  void runCountdown() async {
-    _countdown--;
-    animateCountdown();
-    if (_countdown > 0) {
-      _refreshTimer = Timer(Duration(seconds: 1), runCountdown);
-    } else {
-      _countingDown = false;
-      _stopWatch.start();
-      _refreshTimer = Timer.periodic(Duration(milliseconds: 100), (timer) {
-        setState(() {
-          // timer updated.
-        });
-      });
-    }
-  }
-
-  void start() {
-    _countdown = 6;
-    _stopWatch.reset();
-    _refreshTimer = Timer(Duration(seconds: 1), runCountdown);
-    setState(() {
-      _countingDown = true;
-    });
-  }
-
-  void stop() {
-    _stopWatch.stop();
-    _refreshTimer?.cancel();
-    setState(() {
-      _countingDown = false;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(children: [
-      AnimatedDefaultTextStyle(
-          child: Text(countdown.toString()),
-          style: _transparent
-              ? TextStyle(
-                  color: Colors.transparent,
-                  fontSize: Theme.of(context).textTheme.headline1?.fontSize,
-                )
-              : TextStyle(
-                  color: Colors.black,
-                  fontSize: Theme.of(context).textTheme.headline1?.fontSize,
-                ),
-          duration: Duration(milliseconds: _animationDuration)),
-      Text(
-        '${_stopWatch.elapsed}',
-        style: Theme.of(context).textTheme.headline5,
-      ),
-    ]);
-  }
-}
-*/
