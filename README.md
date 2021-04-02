@@ -1,21 +1,14 @@
-<<<<<<< HEAD
-# jump_stopwatch
-
-A new Flutter application.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-=======
 # jump-stopwatch
-Flutter stopwatch that stops when detecting a jump/fall with accelerometer.
->>>>>>> main
+
+A Flutter Stopwatch that stops automatically when it detects a jump or a fall through the accelerometer data.
+
+## Description
+I'm a rock climber and during the pandemic all nearby gyms and crags are closed. To keep my training up to date I had to resort to home training.
+One of the metrics I'm using to assess my progress is "How much time can I dead hang from a bar?". To automate the measurement I made a flutter "smart" stopwatch that you start, place the phone on your pocket and it automatically stops when a fall is detected.
+Features:
+- Programmable countdown with sounds, between 0 and 5s. This is enough time to place the phone on the pocket and prepare to start the hang.
+- Automatic stop when a fall is detected using the device's accelerometer with a programmable threshold between 0 and 20m/s².- Also works as a regular stopwatch.
+
+## References:
+- [Flutter](https://flutter.dev/)
+- [Flutter sensors](https://pub.dev/packages/sensors)
